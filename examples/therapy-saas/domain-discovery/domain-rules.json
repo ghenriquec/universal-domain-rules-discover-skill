@@ -1,0 +1,36 @@
+{
+  "project": {"name": "therapy-saas", "version": "example", "branch": "main", "commit": "example"},
+  "analysis": {"status": "partial", "mode": "module", "generatedAt": "2026-07-13T00:00:00-03:00", "scope": ["patients", "subscriptions"], "limitations": ["Example data only"]},
+  "actors": [{"id": "ACT-001", "name": "therapist"}],
+  "entities": [{"id": "ENT-001", "name": "Patient"}, {"id": "ENT-002", "name": "Subscription"}],
+  "modules": [{"id": "MOD-001", "name": "Patients"}, {"id": "MOD-002", "name": "Subscriptions"}],
+  "rules": [
+    {
+      "id": "BR-001",
+      "name": "Patient limit by plan",
+      "module": "Patients",
+      "entity": "Patient",
+      "type": "capacity",
+      "description": "A therapist cannot create a patient when the active plan limit has been reached.",
+      "actors": ["therapist"],
+      "preconditions": ["active or trialing subscription"],
+      "trigger": {"action": "create_patient"},
+      "conditions": ["current_patient_count < plan.patient_limit"],
+      "expectedBehavior": {"allowed": "persist patient", "blocked": "reject without persistence"},
+      "sideEffects": ["audit denied attempt"],
+      "exceptions": ["unlimited plan"],
+      "sources": [{"id": "SRC-001", "type": "code", "location": "src/services/patient-service.ts", "reference": "checkPatientLimit", "authority": "implementation"}],
+      "status": "confirmed",
+      "confidence": "medium",
+      "risk": "high",
+      "qaScenarios": ["QA-BR-001-01"]
+    }
+  ],
+  "stateMachines": [],
+  "permissionMatrix": [],
+  "calculations": [],
+  "conflicts": [],
+  "gaps": [],
+  "domainRisks": [],
+  "qaScenarios": ["QA-BR-001-01"]
+}

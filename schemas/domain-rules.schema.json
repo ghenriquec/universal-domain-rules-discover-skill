@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.org/schemas/domain-rules.schema.json",
+  "title": "Domain Rules Discovery",
+  "type": "object",
+  "required": ["project", "analysis", "actors", "entities", "modules", "rules", "stateMachines", "permissionMatrix", "calculations", "conflicts", "gaps", "domainRisks", "qaScenarios"],
+  "properties": {
+    "project": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "version": {"type": "string"},
+        "branch": {"type": "string"},
+        "commit": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "analysis": {
+      "type": "object",
+      "required": ["status", "mode", "generatedAt", "scope", "limitations"],
+      "properties": {
+        "status": {"enum": ["complete", "partial", "incomplete"]},
+        "mode": {"enum": ["full", "incremental", "module", "review", "qa-handoff"]},
+        "generatedAt": {"type": "string"},
+        "scope": {"type": "array", "items": {"type": "string"}},
+        "limitations": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": true
+    },
+    "actors": {"type": "array", "items": {"$ref": "#/$defs/namedItem"}},
+    "entities": {"type": "array", "items": {"$ref": "#/$defs/namedItem"}},
+    "modules": {"type": "array", "items": {"$ref": "#/$defs/namedItem"}},
+    "rules": {"type": "array", "items": {"$ref": "#/$defs/rule"}},
+    "stateMachines": {"type": "array", "items": {"type": "object"}},
+    "permissionMatrix": {"type": "array", "items": {"type": "object"}},
+    "calculations": {"type": "array", "items": {"type": "object"}},
+    "conflicts": {"type": "array", "items": {"type": "object"}},
+    "gaps": {"type": "array", "items": {"type": "object"}},
+    "domainRisks": {"type": "array", "items": {"type": "object"}},
+    "qaScenarios": {"type": "array", "items": {"type": "string", "pattern": "^QA-"}}
+  },
+  "$defs": {
+    "namedItem": {
+      "type": "object",
+      "required": ["id", "name"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "name": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
+    },
+    "source": {
+      "type": "object",
+      "required": ["id", "type", "location"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^SRC-"},
+        "type": {"type": "string"},
+        "location": {"type": "string", "minLength": 1},
+        "reference": {"type": "string"},
+        "authority": {"enum": ["authoritative", "implementation", "verification", "informative"]}
+      },
+      "additionalProperties": true
+    },
+    "rule": {
+      "type": "object",
+      "required": ["id", "name", "module", "type", "description", "actors", "sources", "status", "confidence", "risk", "qaScenarios"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^BR-[0-9]{3,}$"},
+        "name": {"type": "string", "minLength": 1},
+        "module": {"type": "string", "minLength": 1},
+        "entity": {"type": ["string", "null"]},
+        "type": {"type": "string", "minLength": 1},
+        "description": {"type": "string", "minLength": 1},
+        "actors": {"type": "array", "items": {"type": "string"}},
+        "preconditions": {"type": "array", "items": {"type": "string"}},
+        "trigger": {"type": "object"},
+        "conditions": {"type": "array", "items": {"type": "string"}},
+        "expectedBehavior": {"type": "object"},
+        "sideEffects": {"type": "array", "items": {"type": "string"}},
+        "exceptions": {"type": "array", "items": {"type": "string"}},
+        "sources": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source"}},
+        "status": {"enum": ["confirmed", "partially_confirmed", "inferred", "ambiguous", "conflicting", "undocumented", "obsolete", "not_implemented"]},
+        "confidence": {"enum": ["high", "medium", "low"]},
+        "risk": {"enum": ["critical", "high", "medium", "low"]},
+        "qaScenarios": {"type": "array", "items": {"type": "string", "pattern": "^QA-"}}
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

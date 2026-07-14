@@ -1,0 +1,15 @@
+{
+  "project": {"name": "", "version": "", "branch": "", "commit": ""},
+  "analysis": {"status": "incomplete", "mode": "full", "generatedAt": "", "scope": [], "limitations": []},
+  "actors": [],
+  "entities": [],
+  "modules": [],
+  "rules": [],
+  "stateMachines": [],
+  "permissionMatrix": [],
+  "calculations": [],
+  "conflicts": [],
+  "gaps": [],
+  "domainRisks": [],
+  "qaScenarios": []
+}

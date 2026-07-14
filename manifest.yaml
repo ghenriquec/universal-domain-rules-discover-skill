@@ -1,0 +1,46 @@
+schema_version: "1.0"
+name: universal-domain-rules-discovery
+version: "2.0.0"
+display_name: Universal Domain Rules Discovery
+description: >-
+  Vendor-neutral protocol for AI agents to discover and structure domain rules,
+  permissions, states, calculations, exceptions, conflicts, gaps, risks, and
+  domain-specific QA scenarios from repository and product evidence.
+license: MIT
+language: pt-BR
+runtime: agent-agnostic
+entrypoint: SKILL.md
+execution:
+  default_mode: full
+  read_only: true
+  destructive_actions: forbidden
+  human_validation_required_for:
+    - ambiguous_rules
+    - conflicting_authoritative_sources
+    - legal_or_regulatory_interpretation
+    - production_side_effects
+inputs:
+  optional:
+    - repository
+    - documentation
+    - executable_application
+    - api_contracts
+    - database_schema
+    - issue_tracker_exports
+    - domain_expert_statements
+outputs:
+  directory: domain-discovery
+  json_schemas:
+    domain-rules.json: schemas/domain-rules.schema.json
+    qa-domain-scenarios.json: schemas/qa-domain-scenarios.schema.json
+compatibility:
+  required_agent_capabilities:
+    - read_text
+    - write_text
+  optional_agent_capabilities:
+    - search_repository
+    - execute_non_destructive_commands
+    - inspect_database_schema
+    - call_local_application
+    - inspect_ui
+    - run_tests

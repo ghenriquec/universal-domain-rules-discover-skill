@@ -1,0 +1,18 @@
+{
+  "project": {"name": "therapy-saas"},
+  "scenarios": [
+    {
+      "id": "QA-BR-001-01",
+      "ruleId": "BR-001",
+      "module": "Patients",
+      "title": "Block patient creation at plan limit",
+      "priority": "P1",
+      "risk": "high",
+      "actor": "therapist",
+      "preconditions": ["subscription is active", "patient count equals plan limit"],
+      "steps": ["Authenticate as therapist", "Submit a valid patient creation request"],
+      "expectedResults": ["Request is rejected", "No patient is persisted", "Audit event is recorded"],
+      "layers": ["api", "service", "database", "audit"]
+    }
+  ]
+}
