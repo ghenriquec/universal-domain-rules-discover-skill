@@ -68,20 +68,29 @@ def main() -> int:
             print(f"ERROR: {error}")
         return 1
 
-    rules_doc = load_json(output / "domain-rules.json")
-    scenarios_doc = load_json(output / "qa-domain-scenarios.json")
-    rules_schema = load_json(ROOT / "schemas/domain-rules.schema.json")
-    scenarios_schema = load_json(ROOT / "schemas/qa-domain-scenarios.schema.json")
-
     try:
-        jsonschema.validate(rules_doc, rules_schema)
-    except jsonschema.ValidationError as exc:
-        errors.append(f"domain-rules.json schema error: {exc.message}")
+        rules_doc = load_json(output / "domain-rules.json")
+        scenarios_doc = load_json(output / "qa-domain-scenarios.json")
+        rules_schema = load_json(ROOT / "schemas/domain-rules.schema.json")
+        scenarios_schema = load_json(ROOT / "schemas/qa-domain-scenarios.schema.json")
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        print(f"ERROR: Could not read JSON document: {exc}")
+        return 1
 
-    try:
-        jsonschema.validate(scenarios_doc, scenarios_schema)
-    except jsonschema.ValidationError as exc:
-        errors.append(f"qa-domain-scenarios.json schema error: {exc.message}")
+    for filename, document, schema in (
+        ("domain-rules.json", rules_doc, rules_schema),
+        ("qa-domain-scenarios.json", scenarios_doc, scenarios_schema),
+    ):
+        try:
+            jsonschema.validate(document, schema)
+        except jsonschema.ValidationError as exc:
+            errors.append(f"{filename} schema error: {exc.message}")
+
+    # Don't traverse invalid documents: schemas guarantee the structure used below.
+    if errors:
+        for error in errors:
+            print(f"ERROR: {error}")
+        return 1
 
     rules = rules_doc.get("rules", [])
     scenarios = scenarios_doc.get("scenarios", [])
