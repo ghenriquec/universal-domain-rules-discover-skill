@@ -97,17 +97,28 @@ def main() -> int:
     errors.extend(validate_unique(rules, "id", "rule"))
     errors.extend(validate_unique(scenarios, "id", "scenario"))
 
-    rule_ids = {item.get("id") for item in rules}
-    scenario_ids = {item.get("id") for item in scenarios}
+    rules_by_id = {item["id"]: item for item in rules}
+    scenarios_by_id = {item["id"]: item for item in scenarios}
 
     for scenario in scenarios:
-        if scenario.get("ruleId") not in rule_ids:
-            errors.append(f"Scenario {scenario.get('id')} references unknown rule {scenario.get('ruleId')}")
+        linked_rule = rules_by_id.get(scenario["ruleId"])
+        if linked_rule is None:
+            errors.append(f"Scenario {scenario['id']} references unknown rule {scenario['ruleId']}")
+        elif scenario["id"] not in linked_rule["qaScenarios"]:
+            errors.append(
+                f"Scenario {scenario['id']} is not listed by its linked rule {scenario['ruleId']}"
+            )
 
     for rule in rules:
         for scenario_id in rule.get("qaScenarios", []):
-            if scenario_id not in scenario_ids:
-                errors.append(f"Rule {rule.get('id')} references unknown scenario {scenario_id}")
+            linked_scenario = scenarios_by_id.get(scenario_id)
+            if linked_scenario is None:
+                errors.append(f"Rule {rule['id']} references unknown scenario {scenario_id}")
+            elif linked_scenario["ruleId"] != rule["id"]:
+                errors.append(
+                    f"Rule {rule['id']} references scenario {scenario_id} "
+                    f"owned by {linked_scenario['ruleId']}"
+                )
         if rule.get("risk") == "critical" and not rule.get("qaScenarios"):
             errors.append(f"Critical rule {rule.get('id')} has no QA scenario")
         if not rule.get("sources"):
