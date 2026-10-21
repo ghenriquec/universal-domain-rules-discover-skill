@@ -172,3 +172,52 @@ def test_invalid_json_fails_without_traceback(output_dir: Path) -> None:
     assert result.returncode == 1
     assert "ERROR: Could not read JSON document" in result.stdout
     assert "Traceback" not in result.stderr
+
+
+def test_scenario_missing_from_rule_traceability_fails(output_dir: Path) -> None:
+    rules = read_doc(output_dir, "domain-rules.json")
+    rules["rules"][0]["risk"] = "high"
+    rules["rules"][0]["qaScenarios"] = []
+    write_doc(output_dir, "domain-rules.json", rules)
+
+    result = validate(output_dir)
+    assert result.returncode == 1
+    assert "Scenario QA-001 is not listed by its linked rule BR-001" in result.stdout
+
+
+def test_rule_cannot_claim_scenario_owned_by_another_rule(output_dir: Path) -> None:
+    rules = read_doc(output_dir, "domain-rules.json")
+    second_rule = dict(rules["rules"][0])
+    second_rule["id"] = "BR-002"
+    second_rule["risk"] = "low"
+    second_rule["qaScenarios"] = []
+    rules["rules"].append(second_rule)
+    write_doc(output_dir, "domain-rules.json", rules)
+
+    scenarios = read_doc(output_dir, "qa-domain-scenarios.json")
+    scenarios["scenarios"][0]["ruleId"] = "BR-002"
+    write_doc(output_dir, "qa-domain-scenarios.json", scenarios)
+
+    result = validate(output_dir)
+    assert result.returncode == 1
+    assert "Rule BR-001 references scenario QA-001 owned by BR-002" in result.stdout
+
+
+def test_rule_references_missing_scenario_fails(output_dir: Path) -> None:
+    rules = read_doc(output_dir, "domain-rules.json")
+    rules["rules"][0]["qaScenarios"] = ["QA-999"]
+    write_doc(output_dir, "domain-rules.json", rules)
+
+    result = validate(output_dir)
+    assert result.returncode == 1
+    assert "Rule BR-001 references unknown scenario QA-999" in result.stdout
+
+
+def test_duplicate_scenario_id_fails(output_dir: Path) -> None:
+    scenarios = read_doc(output_dir, "qa-domain-scenarios.json")
+    scenarios["scenarios"].append(dict(scenarios["scenarios"][0]))
+    write_doc(output_dir, "qa-domain-scenarios.json", scenarios)
+
+    result = validate(output_dir)
+    assert result.returncode == 1
+    assert "Duplicate scenario id: QA-001" in result.stdout
